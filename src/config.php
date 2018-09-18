@@ -10,7 +10,8 @@ define('FM_HOST','172.16.9.42');
 define('FM_FILE','serviceApp.fmp12');
 define('FM_USER','Admin');
 define('FM_PASSWORD','');
-define('LAYOUT','Users');
+define('LAYOUT','Users_USR');
+define('LAYOUT2','Activity_ATY');
 
 
  ?>

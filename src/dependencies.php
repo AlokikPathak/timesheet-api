@@ -1,6 +1,9 @@
 <?php
 // DIC configuration
 
+use \Psr\Http\Message\ServerRequestInterface as Request;
+use \Psr\Http\Message\ResponseInterface as Response;
+
 $container = $app->getContainer();
 
 // view renderer
@@ -18,11 +21,13 @@ $container['logger'] = function ($c) {
     return $logger;
 };
 
-// container
-$container['HomeController'] = function($c){
-
-    return new controllers\HomeController($container);
+// Injecting HomeController which handles routes methods
+$container['HomeController'] = function( $c ){
+    return new \Src\Controllers\HomeController($c);
 };
 
-
+// Injecting ActivityController which handles routes methods
+$container['ActivityController'] = function( $c ){
+    return new \Src\Controllers\ActivityController($c);
+};
 
