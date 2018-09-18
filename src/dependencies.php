@@ -21,6 +21,40 @@ $container['logger'] = function ($c) {
     return $logger;
 };
 
+// Override the default Not Allowed Error Handler
+$container['notAllowedHandler'] = function ($c) {
+    return function (Request $request, Response $response, $methods) use ($c) {
+        return $c['response']
+            ->withJson(
+                array("Error"=>"Method not allowed.",
+                "Allow"=>'Method must be one of: '.implode(',', $methods)),
+                405
+            );
+    };
+};
+
+// Override the default Not Found Error Handler
+$container['notFoundHandler'] = function ($c) {
+    return function (Request $request, Response $response) use ($c) {
+        return $c['response']
+            ->withJson(
+                array("Error"=>"Page not found."),
+                404
+            );
+    };
+};
+
+// Override the default Php Error Handler
+$c['phpErrorHandler'] = function ($c) {
+    return function (Request $request, Response $response, $error) use ($c) {
+        return $c['response']
+            ->withJson(
+                array("Error"=>"Something went wrong."),
+                500
+            );
+    };
+};
+
 // Injecting HomeController which handles routes methods
 $container['HomeController'] = function( $c ){
     return new \Src\Controllers\HomeController($c);
