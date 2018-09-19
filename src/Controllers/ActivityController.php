@@ -12,7 +12,11 @@ use FileMakerDB;
 use PsrHttpMessageServerRequestInterface as Request;
 use PsrHttpMessageResponseInterface as Response;
 
-
+/**
+ * Handles routes requests and perform requested methods
+ * 
+ * @author : Alokik Pathak 
+ */
 class ActivityController{
 
     public $fileMaker;
@@ -26,7 +30,7 @@ class ActivityController{
         require_once("../services/configFileMaker.php");
         require_once('../src/config.php');
 
-        $this->fileMaker = new FileMakerDB(FM_FILE, FM_HOST, FM_USER, FM_PASSWORD);
+        $this->fileMaker = new FileMakerDB(FM_FILE, FM_HOST, FM_USER, FM_PASSWORD, $this->log);
 
     }
 
@@ -39,7 +43,7 @@ class ActivityController{
      */
     public function getAllActivity($request, $response){
 
-        $layout = LAYOUT2;
+        $layout = LAYOUT_ACTIVITY;
         $criteria = '___kp_Id';
         $criterion = '>0';
 
@@ -64,7 +68,7 @@ class ActivityController{
 
         $userId = $request->getAttribute('userId');
 
-        $layout = LAYOUT2;
+        $layout = LAYOUT_ACTIVITY;
         $criteria = '__kf_UserID';
         $criterion = $userId;
 
@@ -91,7 +95,7 @@ class ActivityController{
                     '__kf_UserID' => $request->getParam('__kf_UserID'),
                     'Name' => $request->getParam('Name')
                     );
-        $layout = LAYOUT2 ;
+        $layout = LAYOUT_ACTIVITY ;
         
         $serverResponse = $this->fileMaker->add($data, $layout);
 
@@ -108,7 +112,7 @@ class ActivityController{
     public function deleteActivity($request, $response){
         
         $activityId = $request->getAttribute('id');
-        $layout = LAYOUT2;
+        $layout = LAYOUT_ACTIVITY;
         $criteria = '___kp_Id';
         $criterion = $activityId;
 
@@ -141,7 +145,7 @@ class ActivityController{
                     'Name' => $request->getParam('Name')
                 );
 
-        $layout = LAYOUT2;
+        $layout = LAYOUT_ACTIVITY;
         $criteria = '___kp_Id';
         $criterion = $data['___kp_Id'];
 
@@ -170,25 +174,18 @@ class ActivityController{
         $userId = $request->getAttribute('userId');
         $filterKey = $request->getAttribute('key');
 
-        $layout = LAYOUT2;
+        $layout = LAYOUT_ACTIVITY;
         $criteria = '__kf_UserID';
         $criterion = $userId;
 
-        /** Mandatory */
-        $criteriaDataA = array(
-            '__kf_UserID' => $userId
-        );
-
-        $criteriaDataB = array(
+        $criteriaData = array(
             '___kp_Id' => $filterKey,
             'Name' => "*".$filterKey."*",
             'CreatedBy' => "*".$filterKey."*",
             'ModifiedBy' => "*".$filterKey."*"
         );
 
-       // $fileMaker = new FileMakerDB(FM_FILE, FM_HOST, FM_USER, FM_PASSWORD);
-
-        $serverResponse = $this->fileMaker->filterActivity($layout, $userId, $criteriaDataB);
+        $serverResponse = $this->fileMaker->filterActivity($layout, $userId, $criteriaData);
 
         return $response->withJson($serverResponse);
         

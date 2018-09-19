@@ -6,12 +6,10 @@
  * @author : Alokik Pathak
  */
 
-define('FM_HOST','172.16.9.42');
-define('FM_FILE','serviceApp.fmp12');
-define('FM_USER','Admin');
-define('FM_PASSWORD','');
-define('LAYOUT','Users_USR');
-define('LAYOUT2','Activity_ATY');
-
-
+define('FM_HOST', getenv('FM_HOST'));
+define('FM_FILE', getenv('FM_FILE'));
+define('FM_USER', getenv('FM_USER'));
+define('FM_PASSWORD', getenv('FM_PASSWORD'));
+define('LAYOUT_USERS', 'Users_USR');
+define('LAYOUT_ACTIVITY', 'Activity_ATY');
  ?>

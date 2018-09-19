@@ -11,52 +11,50 @@
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
 
-require_once 'config.php';
-
-define('PATH', '/api/users' );
+define('PATH_A', '/api/users' );
 define("PATH_B", '/api/activity');
 
 /**
  * Get All users from FileMaker Server Database
  * 
  */
-$app->get( PATH, 'HomeController:getAllUsers');
+$app->get( PATH_A, 'HomeController:getAllUsers');
 
 /**
  * Get All users from FileMaker Server Database
  * 
  */
-$app->get( PATH.'/filter/{key}', 'HomeController:getAllUsersFiltered');
+$app->get( PATH_A.'/filter/{key}', 'HomeController:getAllUsersFiltered');
 
 /**
  * Get a single user from FileMaker Server Database
  * 
  */
-$app->get( PATH.'/{id}', 'HomeController:getUser');
+$app->get( PATH_A.'/{id}', 'HomeController:getUser');
 
 /**
  * Add a new User to Database
  * 
  */
-$app->post( PATH, 'HomeController:addUser');
+$app->post( PATH_A, 'HomeController:addUser');
 
 /**
  * Update a User to Database
  * 
  */
-$app->put( PATH, 'HomeController:updateUser');
+$app->put( PATH_A, 'HomeController:updateUser');
 
 /**
  * Deletes a user using its id
  *  
  */
-$app->delete( PATH.'/{id}', 'HomeController:deleteUser');
+$app->delete( PATH_A.'/{id}', 'HomeController:deleteUser');
 
 /** 
  * Authenticate Login credentials
  * 
  */
-$app->post( PATH.'/login', 'HomeController:authenticateLoginCredentials');
+$app->post( PATH_A.'/login', 'HomeController:authenticateLoginCredentials');
 
 /**
  * Fetching details of all activities
@@ -74,19 +72,19 @@ $app->get(PATH_B.'/{userId}', 'ActivityController:getActivity');
  * Add a new activity to Database 
  * 
  */
-$app->post( PATH_B, 'ActivityController:addActivity');
+$app->post(PATH_B, 'ActivityController:addActivity');
 
 /**
  * Deletes a activity
  *  
  */
-$app->delete( PATH_B.'/{id}', 'ActivityController:deleteActivity');
+$app->delete(PATH_B.'/{id}', 'ActivityController:deleteActivity');
 
 /**
  * Update a Activity to Database
  * 
  */
-$app->put( PATH_B, 'ActivityController:updateActivity');
+$app->put(PATH_B, 'ActivityController:updateActivity');
 
 /**
  * Filter user activities 

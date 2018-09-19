@@ -16,21 +16,27 @@ class FileMakerDB{
 
 	public $fileMaker;
 	public $error ='';
+	public $logger;
     
 	/**
 	 * Contructor establish connection with FileMaker Server
 	 *
 	 */
-	function __construct( $fmFile, $fmHost, $fmUser, $fmPassword){
+	function __construct($fmFile, $fmHost, $fmUser, $fmPassword, $logger){
 		require_once("FileMaker.php");
 		
-		/** Establish connection **/
+		$this->logger = $logger;
+
+		// Establish connection
 		$this->fileMaker = new FileMaker( $fmFile, $fmHost, $fmUser, $fmPassword);
 		$dbs = $this->fileMaker->listDatabases();
 	
-		/** Checking connection to server works without user credits */
+		// Checking connection to server works without user credits
 		if(FileMaker::isError($dbs)) { 
+			
 			$this->error = $dbs->getMessage().' , '.$dbs->getCode(); 
+
+			$this->logger->addInfo($dbs->getMessage().' , '.$dbs->getCode());
 		}
 		
 	}
@@ -48,7 +54,11 @@ class FileMakerDB{
 		$result = $deleteRecord->execute();
 			
 		if(FileMaker::isError($result)){
-			return array('error'=>$result->getMessage(), 'code'=> $result->getCode());
+			
+			$response = array('error'=>$result->getMessage(), 'code'=> $result->getCode());
+		
+			$this->logger->addInfo(json_encode($response));
+			return $response;
 		}
 		
 		return array('status'=>'Succesfully deleted', 'code'=>200);
@@ -65,13 +75,17 @@ class FileMakerDB{
 		
 		$findFieldCommand =& $this->fileMaker->newFindCommand( $layout );
 	
-		//Inserting Record to layout
+		// Inserting Record to layout
 		$insertRecord =& $this->fileMaker->newAddCommand($layout, $data);
 		$result = $insertRecord->execute();
 		
-		//checking for error
+		// checking for error
 		if (FileMaker::isError($result)) {
-			return array( 'error' =>$result->getMessage(), 'code'=> $result->getCode() );
+
+			$response = array( 'error' =>$result->getMessage(), 'code'=> $result->getCode() );
+			
+			$this->logger->addInfo(json_encode($response));
+			return $response;
 		}
 	
 		return array('status'=>'New record added successfully!', 'code'=>201 );
@@ -93,20 +107,22 @@ class FileMakerDB{
 			
 			$findFieldCommand->addFindCriterion($criteria, $criterion);
 		}
-		
-		//$findFieldCommand->setRange(0,10);
 
 		$result = $findFieldCommand->execute();
 			
 		if(FileMaker::isError($result)){
-			return array( 'code'=> $result->getCode() , 'error'=>$result->getMessage());
+			$response = array( 'code'=> $result->getCode() , 'error'=>$result->getMessage());
+			
+			$this->logger->addInfo(json_encode($response));
+			return $response;
 		}
 			
-		//Storing the matching record
+		// Storing the matching record
 		$records = $result->getRecords();
 		
 		$foundCount = $result->getFoundSetCount();
-		//number of records found
+
+		// number of records found
 		$totalRecords = count($records);
 
 		
@@ -164,14 +180,16 @@ class FileMakerDB{
 		$result = $compoundFind->execute();
 			
 		if(FileMaker::isError($result)){
-			return array( 'code'=> $result->getCode() , 'error'=>$result->getMessage());
+			$response = array( 'code'=> $result->getCode() , 'error'=>$result->getMessage());
 			
+			$this->logger->addInfo(json_encode($response));
+			return $response;
 		}
 			
-		//Storing the matching record
+		// Storing the matching record
 		$records = $result->getRecords();
 		
-		//number of records found
+		// number of records found
 		$totalRecords = count($records);
 		
 		$allRecords = array();
@@ -179,7 +197,7 @@ class FileMakerDB{
 		foreach ($records as $record) { 
 			
 			
-			$allRecords[  ]=
+			$allRecords[]=
 							
 							$singleRecord = array(
 								
@@ -213,7 +231,7 @@ class FileMakerDB{
 		$email = $loginCredentials['_ka_Email'];
 		$password = $loginCredentials['Password'];
 		
-		//using findCriterion command for searching in specific layout
+		// using findCriterion command for searching in specific layout
 		$findFieldCommand =& $this->fileMaker->newFindCommand( $layout );
 		
 		$findFieldCommand->addFindCriterion("_ka_Email",'=="'.$email . '"');
@@ -221,25 +239,36 @@ class FileMakerDB{
 		$result = $findFieldCommand->execute();
 
 		if(FileMaker::isError($result)){
-			return array('code'=>$result->getCode(), 
+			$response = array('code'=>$result->getCode(), 
 			'error'=>$result->getMessage(), 
 			'status'=>"Login failed ! invalid credentials"
 			);
+
+			$this->logger->addInfo(json_encode($response));
+			return $response;
 		}
 			
-		//Storing the matching record
+		// Storing the matching record
 		$records = $result->getRecords();
 		$record = $records[0];
 		$pswrd = $record->getField("Password");
 
 		if(strcmp($password,$pswrd)!=0){
-			return array('code'=>401,
+			$responseError = array('code'=>401,
 			 'error'=>'Password is incorrect',
 			 'status'=>"Login failed ! invalid credentials"
 			);
+
+			$this->logger->addInfo(json_encode($responseError));
+			return $responseError;
 		}
 		
-		return array('code'=>200, 'UserID'=>$record->getField("___kp_UserID"),'error'=>'','status'=>'Logged In Successfully');
+		return array(
+			'code'=>200, 
+			'UserID'=>$record->getField("___kp_UserID"),
+			'error'=>'',
+			'status'=>'Logged In Successfully'
+		);
 		
 	}
 	
@@ -255,9 +284,12 @@ class FileMakerDB{
 		$updateRecord =& $this->fileMaker->newEditCommand( $layout, $recordId, $data);
 		$result = $updateRecord->execute();
 			
-		//checking error
+		// checking error
 		if (FileMaker::isError($result)){
-			return array('error'=>$result->getMessage(), 'code'=> $result->getCode() );
+			$response = array('error'=>$result->getMessage(), 'code'=> $result->getCode() );
+			
+			$this->logger->addInfo(json_encode($response));
+			return $response;
 		}
 			
 		return array('status'=>'Succesfully Updated', 'code'=>200 );
@@ -278,10 +310,12 @@ class FileMakerDB{
 		$result = $findFieldCommand->execute();
 			
 		if(FileMaker::isError($result)){
+			
+			$this->logger->addInfo("Couldn't get the record Id");
 			return -1;
 		}
 			
-		//Storing the matching record
+		// Storing the matching record
 		$records = $result->getRecords();
 		$record = $records[0];
 		$recordId = $record->getRecordId();
@@ -309,13 +343,16 @@ class FileMakerDB{
 		$result = $findFieldCommand->execute();
 			
 		if(FileMaker::isError($result)){
-			return array( 'code'=> $result->getCode() , 'error'=>$result->getMessage());
+			$response = array( 'code'=> $result->getCode() , 'error'=>$result->getMessage());
+		
+			$this->logger->addInfo(json_encode($response));
+			return $response;
 		}
 			
-		//Storing the matching record
+		// Storing the matching record
 		$records = $result->getRecords();
 		
-		//number of records found
+		// number of records found
 		$totalRecords = count($records);
 		
 		$allRecords = array();
@@ -323,7 +360,7 @@ class FileMakerDB{
 		foreach ($records as $record) { 
 			
 			
-			$allRecords[  ]=
+			$allRecords[]=
 							
 							$singleRecord = array(
 								
@@ -353,6 +390,7 @@ class FileMakerDB{
 	public function filterActivity($layout, $userID, $criteriaData){
 
 		$count = 1;
+
 		// Creating a Compound find instance 
 		$compoundFind = $this->fileMaker->newCompoundFindCommand($layout);
 
@@ -370,21 +408,24 @@ class FileMakerDB{
 		$result = $compoundFind->execute();
 			
 		if(FileMaker::isError($result)){
-			return array( 'code'=> $result->getCode() , 'error'=>$result->getMessage());
+			
+			$response = array( 'code'=> $result->getCode() , 'error'=>$result->getMessage());
+			$this->logger->addInfo(json_encode($response));
+			
+			return $response;
 		}
 			
-		//Storing the matching record
+		// Storing the matching record
 		$records = $result->getRecords();
 		
-		//number of records found
+		// number of records found
 		$totalRecords = count($records);
 		
 		$allRecords = array();
 
 		foreach ($records as $record) { 
 			
-			
-			$allRecords[  ]=
+			$allRecords[]=
 							
 							$singleRecord = array(
 								

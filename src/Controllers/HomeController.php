@@ -12,7 +12,11 @@ use FileMakerDB;
 use PsrHttpMessageServerRequestInterface as Request;
 use PsrHttpMessageResponseInterface as Response;
 
-
+/**
+ * Handles routes requests and perform requested methods
+ * 
+ * @author : Alokik Pathak 
+ */
 class HomeController{
 
     public $fileMaker;
@@ -26,7 +30,7 @@ class HomeController{
         require_once("../services/configFileMaker.php");
         require_once('../src/config.php');
 
-        $this->fileMaker = new FileMakerDB(FM_FILE, FM_HOST, FM_USER, FM_PASSWORD);
+        $this->fileMaker = new FileMakerDB(FM_FILE, FM_HOST, FM_USER, FM_PASSWORD, $this->log);
 
     }
 
@@ -40,15 +44,13 @@ class HomeController{
      */
     public function getAllUsers($request, $response){
 
-        $layout = LAYOUT;
+        $layout = LAYOUT_USERS;
         $criteria = '___kp_UserID';
         $criterion = '>0';
 
         $criteriaData = array(
             $criteria => $criterion
         );
-
-        $fieldNames = array("___kp_UserID", "FirstName", "LastName", '_ka_Email', '_ka_Mobile', 'Department', 'Address');
 
         $serverResponse = $this->fileMaker->get($layout, $criteriaData);
         
@@ -66,7 +68,7 @@ class HomeController{
     public function getAllUsersFiltered( $request, $response){
 
         $filterKey = $request->getAttribute('key');
-        $layout = LAYOUT;
+        $layout = LAYOUT_USERS;
         
         $criteriaData = array(
             '___kp_UserID' => $filterKey,
@@ -77,8 +79,6 @@ class HomeController{
             'Designation' => "*".$filterKey."*",
             'Address' => "*".$filterKey."*"
         );
-
-        $fieldNames = array("___kp_UserID", "FirstName", "LastName", '_ka_Email', '_ka_Mobile', 'Department', 'Address');
 
         $serverResponse = $this->fileMaker->getFiltered($layout, $criteriaData);
         
@@ -96,15 +96,13 @@ class HomeController{
     public function getUser( $request, $response){
         
         $userId = $request->getAttribute('id');
-        $layout = LAYOUT;
+        $layout = LAYOUT_USERS;
         $criteria = '___kp_UserID';
         $criterion = $userId;
 
         $criteriaData = array(
             $criteria => $criterion
         );
-
-        $fieldNames = array("___kp_UserID", "FirstName", "LastName", '_ka_Email', '_ka_Mobile', 'Department', 'Address');
 
         $serverResponse = $this->fileMaker->get($layout, $criteriaData);	
         
@@ -131,7 +129,7 @@ class HomeController{
                     'Password' => strtoupper( md5($request->getParam('Password')) ),
                 
                     );
-        $layout = LAYOUT;
+        $layout = LAYOUT_USERS;
                     
         $serverResponse = $this->fileMaker->add($userData, $layout);
 
@@ -158,7 +156,7 @@ class HomeController{
                     'Address' => $request->getParam('address')
                     );
 
-        $layout = LAYOUT;
+        $layout = LAYOUT_USERS;
         $criteria = '___kp_UserID';
         $criterion = $userData['___kp_UserID'];
 
@@ -185,7 +183,7 @@ class HomeController{
     public function deleteUser( $request, $response ){
         
         $userId = $request->getAttribute('id');
-        $layout = LAYOUT;
+        $layout = LAYOUT_USERS;
         $criteria = '___kp_UserID';
         $criterion = $userId;
 
@@ -219,7 +217,7 @@ class HomeController{
         $password = md5($password);
 
         $password = strtoupper($password);
-        $layout = LAYOUT;
+        $layout = LAYOUT_USERS;
 
         $loginCredentials = array(
                         '_ka_Email'=> $email,
