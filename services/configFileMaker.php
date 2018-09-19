@@ -2,7 +2,7 @@
 /**
  * File Name : configFileMaker.php
  * Establish connection and perform database operations with FileMaker Server
- *  
+ * 
  * @author : Alokik Pathak
  */
 
@@ -23,6 +23,7 @@ class FileMakerDB{
 	 *
 	 */
 	function __construct($fmFile, $fmHost, $fmUser, $fmPassword, $logger){
+	
 		require_once("FileMaker.php");
 		
 		$this->logger = $logger;
@@ -88,7 +89,7 @@ class FileMakerDB{
 			return $response;
 		}
 	
-		return array('status'=>'New record added successfully!', 'code'=>201 );
+		return array('status'=>'Registration successfull!', 'code'=>201 );
 	}
 	
 	
@@ -254,7 +255,7 @@ class FileMakerDB{
 		$pswrd = $record->getField("Password");
 
 		if(strcmp($password,$pswrd)!=0){
-			$responseError = array('code'=>401,
+			$responseError = array('code'=>422,
 			 'error'=>'Password is incorrect',
 			 'status'=>"Login failed ! invalid credentials"
 			);
@@ -332,7 +333,6 @@ class FileMakerDB{
 	 */
 	public function getActivity($layout, $criteriaData){
 
-		
 		$findFieldCommand =& $this->fileMaker->newFindCommand($layout);
 		
 		foreach( $criteriaData as $criteria => $criterion ){

@@ -21,13 +21,14 @@ $container['logger'] = function ($c) {
     return $logger;
 };
 
-$log = $container->get('logger');
-
 // Override the default Not Allowed Error Handler
 $container['notAllowedHandler'] = function ($c) {
+
+    $logger = $container->get('logger');
+    $logger->addInfo('Status: 405, Error: Method not allowed');
+    
     return function (Request $request, Response $response, $methods) use ($c) {
 
-        $log->addInfo('Status: 405, Error: Method not allowed');
         return $c['response']
             ->withJson(
                 array("Error"=>"Method not allowed",
@@ -35,10 +36,14 @@ $container['notAllowedHandler'] = function ($c) {
                 405
             );
     };
+
 };
 
 // Override the default Not Found Error Handler
 $container['notFoundHandler'] = function ($c) {
+
+    $logger = $c->get('logger');
+    $logger->addInfo('Status: 404, Error: Page not found');
 
     return function (Request $request, Response $response) use ($c) {
 
@@ -49,20 +54,23 @@ $container['notFoundHandler'] = function ($c) {
             );
     };
 
-    $log->info('Status: 404, Error: Page not found');
 };
 
 // Override the default Php Error Handler
-$c['phpErrorHandler'] = function ($c) {
+$container['phpErrorHandler'] = function ($c) {
+    
+    $logger = $c->get('logger');
+    $logger->addInfo('Status: 500, Error: Something went wrong');
+    
     return function (Request $request, Response $response, $error) use ($c) {
 
-        $log->addInfo('Status: 500, Error: Something went wrong');
         return $c['response']
             ->withJson(
                 array("Error"=>"Something went wrong"),
                 500
             );
     };
+ 
 };
 
 // Injecting HomeController which handles routes methods
